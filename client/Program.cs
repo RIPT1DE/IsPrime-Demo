@@ -45,9 +45,9 @@ while (true)
 
         successfulRequests++;
 
-        var ttl = (DateTime.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(requestData.Timestamp).DateTime).Milliseconds;
+        var rtt = (DateTime.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(requestData.Timestamp).DateTime).Milliseconds;
 
-        // Util.Print($"Request Id {requestData.Id}, TTL: {ttl}, isPrime: {reply.IsPrime}");
+        Util.Print($"Request Id {requestData.Id}, RTT: {rtt}, isPrime: {reply.IsPrime}");
       }
       catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
       {
@@ -67,6 +67,7 @@ while (true)
   Util.Print("Timed out Requests: " + timedOutRequests);
   Util.Print("Error Requests: " + errorRequests);
 
+  // There is still time until the next interval, so we wait
   if (DateTime.UtcNow < deadline)
   {
     await Task.Delay(deadline - DateTime.UtcNow);
