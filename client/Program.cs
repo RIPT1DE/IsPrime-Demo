@@ -16,7 +16,7 @@ var requests = new Task[REQUESTS_PER_SECOND];
 var currentRequestId = 0;
 
 //Random number generator
-Random rnd = new Random();
+Random rnd = new Random((DateTime.UtcNow - DateTime.UnixEpoch).Milliseconds);
 
 while (true)
 {
@@ -29,6 +29,7 @@ while (true)
 
   var successfulRequests = 0;
   var timedOutRequests = 0;
+  var errorRequests = 0;
 
   for (var i = 0; i < REQUESTS_PER_SECOND; i++)
   {
@@ -37,23 +38,38 @@ while (true)
       try
       {
         var requestNumber = rnd.Next(0, 1000);
+        var requestData = new PrimeNumber { Id = ++currentRequestId, Timestamp = currentEpoch, Number = requestNumber };
         var reply = await client.IsPrimeAsync(
-                    new PrimeNumber { Id = currentRequestId++, Timestamp = currentEpoch, Number = requestNumber },
+                    requestData,
                     deadline: deadline);
 
         successfulRequests++;
+
+        var ttl = (DateTime.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(requestData.Timestamp).DateTime).Milliseconds;
+
+        // Util.Print($"Request Id {requestData.Id}, TTL: {ttl}, isPrime: {reply.IsPrime}");
       }
       catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
       {
-        Console.WriteLine("Request timed out!");
+        Util.Print("Request timed out!", ConsoleColor.Red);
         timedOutRequests++;
+      }
+      catch (Exception ex)
+      {
+        Util.Print("Request error" + ex.Message, ConsoleColor.Red);
+        errorRequests++;
       }
     });
   }
   await Task.WhenAll(requests);
 
-  Console.WriteLine("Successful Requests: " + successfulRequests);
-  Console.WriteLine("Failed Requests: " + timedOutRequests);
+  Util.Print("Successful Requests: " + successfulRequests);
+  Util.Print("Timed out Requests: " + timedOutRequests);
+  Util.Print("Error Requests: " + errorRequests);
+
+  if (DateTime.UtcNow < deadline)
+  {
+    await Task.Delay(deadline - DateTime.UtcNow);
+  }
 
 }
-
