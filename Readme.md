@@ -19,6 +19,8 @@ The server will check the primality of requested numbers, and log the top 10 num
 ## Implementation
 Throughout the implementation, the scalability and performance of the code was taken as top priority, to allow for large Req/s. This Req/s was achievable on my local machine running Release variants of both server and client. If, however, logging every request is enabled on the client, it slows down considerably.
 
+The implementation also strives to keep the code as simple as possible. This makes it easier to track bugs and maintain in the future.
+
 1. Created a prime number generator script in python first, to rule out prime checks as a bottleneck. Now both client and server can check primes in O(1) time. Should the range of prime numbers change, we only rerun the script
 2. Created server and client with basic running example to check the base case (request/response)
 3. Scaled the client upto 10K requests per second using .Net Tasks (which are essentially lightweight threads). This allows us to create many parallel requests without allocating a separate thread for each request
