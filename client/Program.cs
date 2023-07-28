@@ -43,11 +43,18 @@ while (true)
                     requestData,
                     deadline: deadline);
 
+        var isValid = reply.IsPrime == PrimeUtils.IsPrime(requestNumber);
+
+        if (!isValid)
+        {
+          Util.Print("Invalid Response from Server", ConsoleColor.Red);
+        }
+
         successfulRequests++;
 
         var rtt = (DateTime.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(requestData.Timestamp).DateTime).Milliseconds;
 
-        Util.Print($"Request Id {requestData.Id}, RTT: {rtt}, isPrime: {reply.IsPrime}");
+        // Util.Print($"Request Id {requestData.Id}, RTT: {rtt}, isPrime: {reply.IsPrime}");
       }
       catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
       {
