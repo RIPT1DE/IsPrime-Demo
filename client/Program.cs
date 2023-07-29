@@ -50,21 +50,20 @@ while (true)
           Util.Print("Invalid Response from Server", ConsoleColor.Red);
         }
 
-        successfulRequests++;
-
         var rtt = (DateTime.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(requestData.Timestamp).DateTime).Milliseconds;
+        Interlocked.Increment(ref successfulRequests);
 
         // Util.Print($"Request Id {requestData.Id}, RTT: {rtt}, isPrime: {reply.IsPrime}");
       }
       catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
       {
         Util.Print("Request timed out!", ConsoleColor.Red);
-        timedOutRequests++;
+        Interlocked.Increment(ref timedOutRequests);
       }
       catch (Exception ex)
       {
         Util.Print("Request error" + ex.Message, ConsoleColor.Red);
-        errorRequests++;
+        Interlocked.Increment(ref errorRequests);
       }
     });
   }
